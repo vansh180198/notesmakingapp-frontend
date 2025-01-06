@@ -55,7 +55,7 @@ const Navbar = ({ toggleTheme, currentTheme }) => {
           Username: ${inviteUsername}
 
           Click the link below to create your account and start collaborating:
-          [Register Now](http://localhost:3000/signup)
+          [Register Now](https://eclectic-gaufre-6ce38f.netlify.app/)
 
           Best regards,
           Notes App Team
