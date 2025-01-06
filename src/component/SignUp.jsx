@@ -12,6 +12,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button"; // ShadCN Button
 import { Input } from "@/components/ui/input"; // ShadCN Input
+import BASE_API_URL from "@/config/config";
 
 const SignUp = ({ theme }) => {
   // State variables to manage user input
