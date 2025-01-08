@@ -1,8 +1,6 @@
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
  * EditNoteForm Component
@@ -39,12 +37,29 @@ const EditNoteForm = ({
 }) =>{
 console.log(noteCreator)
 return(
-  <div className="space-y-4">
+  <div className="space-y-4"
+  style={{
+    borderRadius: "10px",
+    padding:"20px",
+    width: "63.6%", // Width for A4 proportions (based on 80% height)
+    height: "80vh", // 80% of the viewport height
+    margin: "auto", // Center the form horizontally and vertically
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "#FFF", // White background like an A4 page
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Subtle shadow for elevation
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  }}
+  >
     {/* Input for the note's title */}
     <Input
       placeholder="Title"
       value={newTitle}
-      onChange={(e) => setNewTitle(e.target.value)}
+      onChange={(e) => setNewTitle(e.target.value)}     
     />
 
     {/* Textarea for the note's content */}
@@ -52,6 +67,9 @@ return(
       placeholder="Content"
       value={newContent}
       onChange={(e) => setNewContent(e.target.value)}
+      style={{
+        height:"70%"
+      }}
     />
 
     {/* Input for the note's category */}

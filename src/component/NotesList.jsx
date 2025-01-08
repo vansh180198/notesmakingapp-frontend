@@ -79,6 +79,7 @@ const NotesList = ({ theme }) => {
         const response = await axios.get(`${BASE_API_URL}/notes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log(response.data)
         setNotes(response.data);
 
         // Extract unique categories
@@ -233,6 +234,7 @@ const NotesList = ({ theme }) => {
         content: newContent,
         category: newCategory || null,
         collaborators: newCollaborators.split(",").map((email) => email.trim()),
+        creator:editingNote.creator
       };
     }
     

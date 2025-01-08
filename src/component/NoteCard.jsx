@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const NoteCard = ({ theme, note, onEdit, onDelete, loggedInUserEmail }) => {
-  
+  console.log("check",note.content.slice(0,100))
   
   
   
@@ -26,10 +26,12 @@ const NoteCard = ({ theme, note, onEdit, onDelete, loggedInUserEmail }) => {
   <Card
     className="note-item p-4 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300"
     style={{
+      height:"300px",
       backgroundColor: theme === "dark" ? "#B8860B" : "#FFFBCC", // Card background color based on theme
       color: theme === "dark" ? "#4B5563" : "#000000", // Text color based on theme
     }}
   >
+    <div style={{display:"flex",flexDirection:"column",height:"100%",justifyContent:"space-between"}}>
     {/* Card Header with Note Title */}
     <CardHeader>
       <CardTitle>{note.title}</CardTitle>
@@ -37,25 +39,29 @@ const NoteCard = ({ theme, note, onEdit, onDelete, loggedInUserEmail }) => {
 
     {/* Card Content with Note Details */}
     <CardContent>
-      {/* Note Content Preview */}
-      <p>{note.content.slice(0, 100)}...</p>
-      
-      {/* Note Category */}
+        {/* Note Category */}
       <p className="font-bold">
         Category: <span className="font-normal">{note.category || "Uncategorized"}</span>
       </p>
 
       {/* Note Collaborators */}
-      <p className="font-bold">Collaborators:</p>
+      <span className="font-bold">Collaborators:</span>
       {}
-      <p className="font-normal">
+      <span style={{textDecoration:"underline"}} className="font-normal">
         {note.collaborators.length >= 1
           ? note.collaborators.join(", ") // List of collaborators
           : "No collaborators"} 
-      </p>
-
-      {/* Action Buttons for Editing and Deleting Notes */}
-      <div className="flex gap-2 mt-2">
+      </span>
+      {/* Note Content Preview */}
+      <p style={{ wordBreak: "break-word" }}>
+  {note.content.slice(0, 50)}...
+</p>      
+ 
+     
+    </CardContent>
+    <div>
+       {/* Action Buttons for Editing and Deleting Notes */}
+       <div className="flex gap-2 mt-2">
         {/* Edit Button */}
         <Button
           variant="outline"
@@ -75,7 +81,8 @@ const NoteCard = ({ theme, note, onEdit, onDelete, loggedInUserEmail }) => {
           </Button>
         )}
       </div>
-    </CardContent>
+    </div>
+    </div>
   </Card>
 )};
 
