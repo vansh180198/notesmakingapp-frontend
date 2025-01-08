@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const NoteCard = ({ theme, note, onEdit, onDelete, loggedInUserEmail }) => {
-  console.log("check",note.content.slice(0,100))
+  // console.log("check",note.content.slice(0,100))
   
   
   

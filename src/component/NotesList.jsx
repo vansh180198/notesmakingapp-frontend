@@ -79,7 +79,7 @@ const NotesList = ({ theme }) => {
         const response = await axios.get(`${BASE_API_URL}/notes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response.data)
+        // console.log(response.data)
         setNotes(response.data);
 
         // Extract unique categories
@@ -180,6 +180,14 @@ const NotesList = ({ theme }) => {
       if (eventSource) eventSource.close();
     };
   }, []);
+
+  useEffect(()=>{
+    const uniqueCategories = [
+      "All Notes",
+      ...new Set(notes.map((note) => note.category).filter(Boolean)),
+    ];
+    setCategories(uniqueCategories);
+  },[notes])
 
   // Handle editing a note
   const handleEditNote = (note) => {
@@ -295,9 +303,10 @@ const NotesList = ({ theme }) => {
     if (filterType === "All") return true;
     if (filterType === "My Notes") return note.creator === loggedInUserEmail;
     if (filterType === "Collaborations")
-      return note.collaborators.includes(loggedInUserEmail);
+      return note.collaborators.length>1
     return true;
   });
+  console.log("colllab check ",filteredNotes)
 
   // Further filter notes by selected category
   const finalFilteredNotes =
@@ -305,6 +314,7 @@ const NotesList = ({ theme }) => {
       ? filteredNotes
       : filteredNotes.filter((note) => note.category === selectedCategory);
 
+      console.log("category check ",finalFilteredNotes)
   // Handle loading or error states
   if (loading) return <p>Loading notes...</p>;
   if (error) return <p>{error}</p>;
