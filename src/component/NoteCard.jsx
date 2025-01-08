@@ -22,19 +22,19 @@ const NoteCard = ({ theme, note, onEdit, onDelete, loggedInUserEmail }) => {
   
   
   return(
-  
+    
   <Card
     className="note-item p-4 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300"
     style={{
       height:"300px",
-      backgroundColor: theme === "dark" ? "#B8860B" : "#FFFBCC", // Card background color based on theme
-      color: theme === "dark" ? "#4B5563" : "#000000", // Text color based on theme
+      backgroundColor: theme === "dark" ? "#001861" : "#FFFBCC", // Card background color based on theme
+      color: theme === "dark" ? "white" : "#000000", // Text color based on theme
     }}
   >
     <div style={{display:"flex",flexDirection:"column",height:"100%",justifyContent:"space-between"}}>
     {/* Card Header with Note Title */}
     <CardHeader>
-      <CardTitle>{note.title}</CardTitle>
+      <CardTitle style={{ color: "#FF7F50" }}>{note.title}</CardTitle>
     </CardHeader>
 
     {/* Card Content with Note Details */}

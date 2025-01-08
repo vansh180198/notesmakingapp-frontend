@@ -27,7 +27,10 @@ const Navbar = ({ toggleTheme, currentTheme }) => {
 
   // Handle user logout
   const handleLogout = () => {
-    localStorage.clear(); // Clear all stored user data
+    localStorage.removeItem("token");
+    localStorage.removeItem("userid");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email"); // Clear all stored user data
     navigate("/signin"); // Redirect to SignIn page
   };
 

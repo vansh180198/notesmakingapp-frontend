@@ -56,6 +56,9 @@ const NotesList = ({ theme }) => {
         if (error.response && error.response.status === 401) {
           alert("Session expired. Please log in again.");
           localStorage.removeItem("token");
+          localStorage.removeItem("userid");
+          localStorage.removeItem("username");
+          localStorage.removeItem("email");
           navigate("/signin");
         }
         return Promise.reject(error);
@@ -132,7 +135,8 @@ const NotesList = ({ theme }) => {
       // Handle note update events
       eventSource.addEventListener("note-updated", (event) => {
         const newNote = JSON.parse(event.data);
-      
+        console.log("collab notes check",newNote)
+
         setNotes((prevNotes) => {
           // Check if the note with the same ID already exists
           const existingIndex = prevNotes.findIndex((note) => note.id === newNote.id);
@@ -303,7 +307,7 @@ const NotesList = ({ theme }) => {
     if (filterType === "All") return true;
     if (filterType === "My Notes") return note.creator === loggedInUserEmail;
     if (filterType === "Collaborations")
-      return note.collaborators.length>1
+      return note.collaborators.length>=1
     return true;
   });
   console.log("colllab check ",filteredNotes)

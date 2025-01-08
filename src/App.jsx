@@ -46,7 +46,7 @@ const App = () => {
     <Router>
       {/* Navbar Component with theme toggling functionality */}
       <Navbar toggleTheme={toggleTheme} currentTheme={theme} />
-      <div
+      <div style={{minHeight:"100%"}}
         className={`app-container ${
           theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
         }`}
