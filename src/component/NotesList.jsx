@@ -16,6 +16,7 @@ import FilterBar from "./FilterBar";
 import NotesGrid from "./NotesGrid";
 import EditNoteForm from "./EditNoteForm";
 import BASE_API_URL from "@/config/config";
+
 const NotesList = ({ theme }) => {
   // State for managing notes and categories
   const [notes, setNotes] = useState([]);
@@ -40,10 +41,12 @@ const NotesList = ({ theme }) => {
   const [newCollaborators, setNewCollaborators] = useState("");
   const [notecreator, setNotecreator] = useState("");
 
-
   // State for editing functionality
   const [isEditing, setIsEditing] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
+
+  const [showWarningModal, setShowWarningModal] = useState(false);
+
 
   const navigate = useNavigate();
   const loggedInUserEmail = localStorage.getItem("email");
@@ -82,8 +85,8 @@ const NotesList = ({ theme }) => {
         const response = await axios.get(`${BASE_API_URL}/notes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        // console.log(response.data)
         setNotes(response.data);
+        console.log(response.data)
 
         // Extract unique categories
         const uniqueCategories = [
@@ -122,37 +125,25 @@ const NotesList = ({ theme }) => {
       // Handle note creation events
       eventSource.addEventListener("note-created", (event) => {
         const newNote = JSON.parse(event.data);
-      
         setNotes((prevNotes) => {
-          // Check if the note with the same ID already exists
           const isDuplicate = prevNotes.some((note) => note.id === newNote.id);
-          
-          // Only add the new note if it's not a duplicate
           return isDuplicate ? prevNotes : [...prevNotes, newNote];
         });
       });
-      
+
       // Handle note update events
       eventSource.addEventListener("note-updated", (event) => {
         const newNote = JSON.parse(event.data);
-        console.log("collab notes check",newNote)
-
         setNotes((prevNotes) => {
-          // Check if the note with the same ID already exists
           const existingIndex = prevNotes.findIndex((note) => note.id === newNote.id);
-      
           if (existingIndex !== -1) {
-            // Replace the existing note with the new note
             const updatedNotes = [...prevNotes];
             updatedNotes[existingIndex] = newNote;
             return updatedNotes;
           }
-      
-          // Add the new note if it's not a duplicate
           return [...prevNotes, newNote];
         });
       });
-      
 
       // Handle note deletion events
       eventSource.addEventListener("note-deleted", (event) => {
@@ -185,13 +176,110 @@ const NotesList = ({ theme }) => {
     };
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     const uniqueCategories = [
       "All Notes",
       ...new Set(notes.map((note) => note.category).filter(Boolean)),
     ];
     setCategories(uniqueCategories);
-  },[notes])
+  }, [notes]);
+
+  // ** Auto-Categorization Feature **
+  const handleAutoCategorize = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You are not logged in.");
+      return;
+    }
+
+    try {
+      // Prepare notes for categorization
+      const notesForCategorization = notes.map((note) => ({
+        id: note.id,
+        title: note.title,
+        content: note.content,
+      }));
+
+      // Call categorization API
+      const categorizedNotes = await autoCategorizeNotes(notesForCategorization);
+      console.log(categorizedNotes)
+
+
+
+     // Call categorization API
+    // const categorizedNotes = await autoCategorizeNotes(notesForCategorization);
+
+    // Update categories in backend
+    const updatePromises = categorizedNotes.map(({ id, category }) => {
+      const noteToUpdate = notes.find((note) => note.id === id);
+
+      if (noteToUpdate) {
+        return axios.put(
+          `${BASE_API_URL}/notes/${id}`,
+          { ...noteToUpdate, category },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      return Promise.resolve();
+    });
+
+    await Promise.all(updatePromises);
+
+    // Optional: Immediate UI update
+    setNotes((prevNotes) =>
+      prevNotes.map((note) => {
+        const updatedCategory = categorizedNotes.find(
+          (categorizedNote) => categorizedNote.id === note.id
+        )?.category;
+        return updatedCategory ? { ...note, category: updatedCategory } : note;
+      })
+    );
+
+    alert("Notes successfully auto-categorized!");
+  } catch (error) {
+    console.error("Error during auto-categorization:", error);
+    alert("An error occurred while categorizing notes.");
+  }
+};
+
+  const autoCategorizeNotes = async (notesForCategorization) => {
+    const requestBody = {
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an assistant that categorizes notes. Each note includes an id, title, and content. Return the response as an array where each note has its id and the assigned category.",
+        },
+        {
+          role: "user",
+          content: JSON.stringify(notesForCategorization, null, 2),
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 300,
+      top_p: 1,
+    };
+
+    const response = await axios.post(
+      "https://models.inference.ai.azure.com/chat/completions",
+      requestBody,
+      {
+        headers: {
+          Authorization: import.meta.env.VITE_GITHUB_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`Failed to auto-categorize notes: ${response.statusText}`);
+    }
+
+    const rawContent = response.data.choices[0].message.content;
+    return JSON.parse(rawContent.replace(/```json/g, "").replace(/```/g, "").trim());
+  };
 
   // Handle editing a note
   const handleEditNote = (note) => {
@@ -202,7 +290,7 @@ const NotesList = ({ theme }) => {
     setNewCategory(note.category || "");
     setNewCollaborators(note.collaborators ? note.collaborators.join(", ") : "");
     setShowModal(true);
-    setNotecreator(note.creator==loggedInUserEmail);
+    setNotecreator(note.creator === loggedInUserEmail);
   };
 
   // Handle deleting a note
@@ -232,29 +320,23 @@ const NotesList = ({ theme }) => {
     }
 
     let noteData = {
-      id: Date.now() * 1000 + Math.floor(Math.random() * 1000), // Generate a Long-like numeric ID
+      id: Date.now() * 1000 + Math.floor(Math.random() * 1000),
       title: newTitle,
       content: newContent,
       category: newCategory || null,
       collaborators: newCollaborators.split(",").map((email) => email.trim()),
       creator: loggedInUserEmail,
     };
-    if(isEditing){
+
+    if (isEditing) {
       noteData = {
-        id:editingNote.id,
-        title: newTitle,
-        content: newContent,
-        category: newCategory || null,
-        collaborators: newCollaborators.split(",").map((email) => email.trim()),
-        creator:editingNote.creator
+        ...noteData,
+        id: editingNote.id,
+        creator: editingNote.creator,
       };
     }
-    
-    
-    
 
     const previousNotes = [...notes];
-
     if (isEditing) {
       setNotes((prevNotes) =>
         prevNotes.map((note) => (note.id === editingNote.id ? noteData : note))
@@ -265,17 +347,13 @@ const NotesList = ({ theme }) => {
 
     try {
       if (isEditing) {
-        await axios.put(
-          `${BASE_API_URL}/notes/${editingNote.id}`,
-          noteData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.put(`${BASE_API_URL}/notes/${editingNote.id}`, noteData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       } else {
-        const response = await axios.post(
-          `${BASE_API_URL}/notes`,
-          noteData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await axios.post(`${BASE_API_URL}/notes`, noteData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setNotes((prevNotes) =>
           prevNotes.map((note) =>
             note.id === noteData.id ? { ...note, id: response.data.id } : note
@@ -289,7 +367,6 @@ const NotesList = ({ theme }) => {
     }
   };
 
-  // Reset form state
   const resetForm = () => {
     setShowModal(false);
     setNewTitle("");
@@ -302,24 +379,24 @@ const NotesList = ({ theme }) => {
     setNotecreator("");
   };
 
-  // Filter notes based on collaboration or ownership
   const filteredNotes = notes.filter((note) => {
     if (filterType === "All") return true;
     if (filterType === "My Notes") return note.creator === loggedInUserEmail;
-    if (filterType === "Collaborations")
-      return note.collaborators.length>=1
+    if (filterType === "Collaborations"){
+      if(note.collaborators.length == 1){
+       return note.collaborators[0]==""?false:true; 
+      }
+      return note.collaborators.length >= 1;
+    } 
     return true;
   });
-  console.log("colllab check ",filteredNotes)
+  console.log(filterType," ",filteredNotes)
 
-  // Further filter notes by selected category
   const finalFilteredNotes =
     selectedCategory === "All Notes"
       ? filteredNotes
       : filteredNotes.filter((note) => note.category === selectedCategory);
 
-      console.log("category check ",finalFilteredNotes)
-  // Handle loading or error states
   if (loading) return <p>Loading notes...</p>;
   if (error) return <p>{error}</p>;
 
@@ -334,13 +411,17 @@ const NotesList = ({ theme }) => {
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
-      <Button
-        variant="default"
-        className="mb-4"
-        onClick={() => setShowModal(true)}
-      >
+      <Button style={{margin:"10px"}} variant="default" className="mb-4" onClick={() => setShowModal(true)}>
         Add Note
       </Button>
+      <Button
+  variant="default"
+  className="mb-4"
+  onClick={() => setShowWarningModal(true)}
+>
+  Auto Categorize Notes
+</Button>
+
       {finalFilteredNotes.length === 0 ? (
         <p>No notes found. Create your first note!</p>
       ) : (
@@ -359,11 +440,7 @@ const NotesList = ({ theme }) => {
         toggleOnlineUsersTab={setIsOnlineUsersTabOpen}
         theme={theme}
       />
-      <CustomModal
-        open={showModal}
-        onClose={resetForm}
-        message={successMessage}
-      >
+      <CustomModal open={showModal} onClose={resetForm} message={successMessage}>
         <EditNoteForm
           newTitle={newTitle}
           setNewTitle={setNewTitle}
@@ -379,6 +456,56 @@ const NotesList = ({ theme }) => {
           noteCreator={notecreator}
         />
       </CustomModal>
+
+       {/* Warning Modal */}
+    <CustomModal
+      open={showWarningModal}
+      onClose={() => setShowWarningModal(false)}
+    >
+      < div className="space-y-4"
+  style={{
+    borderRadius: "10px",
+    padding: "20px",
+    minHeight: "300px",
+    width: "350px", // Width for A4 proportions (based on 80% height)
+    height: "40vh", // 80% of the viewport height
+    margin: "auto", // Center the form horizontally and vertically
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: theme != "dark" ? "#FFF" : "rgb(31 41 55)", // Fixed syntax
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Subtle shadow for elevation
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+}}
+
+  >
+        <h2 className="text-lg font-bold mb-4">Warning</h2>
+        <p>
+          The auto-categorization feature uses a free AI model, which may not
+          always produce accurate results and can give different results. Do you still want to proceed?
+        </p>
+        <div className="flex justify-end mt-4 gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => setShowWarningModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="default"
+            onClick={() => {
+              setShowWarningModal(false);
+              handleAutoCategorize(); // Trigger auto-categorization on confirm
+            }}
+          >
+            Proceed
+          </Button>
+        </div>
+      </div>
+    </CustomModal>
     </div>
   );
 };
