@@ -50,6 +50,7 @@ const NotesList = ({ theme }) => {
 
   const navigate = useNavigate();
   const loggedInUserEmail = localStorage.getItem("email");
+  console.log(import.meta.env.VITE_GITHUB_KEY)
 
   // Setup Axios interceptor for handling 401 errors globally
   useEffect(() => {
@@ -274,8 +275,10 @@ const NotesList = ({ theme }) => {
     );
 
     if (response.status !== 200) {
-      throw new Error(`Failed to auto-categorize notes: ${response.statusText}`);
+      alert(`Failed to auto-categorize notes: ${response.statusText}`);
+      return
     }
+    
 
     const rawContent = response.data.choices[0].message.content;
     return JSON.parse(rawContent.replace(/```json/g, "").replace(/```/g, "").trim());
