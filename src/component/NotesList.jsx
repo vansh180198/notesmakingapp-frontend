@@ -50,7 +50,6 @@ const NotesList = ({ theme }) => {
 
   const navigate = useNavigate();
   const loggedInUserEmail = localStorage.getItem("email");
-  console.log(import.meta.env.VITE_GITHUB_KEY)
 
   // Setup Axios interceptor for handling 401 errors globally
   useEffect(() => {
