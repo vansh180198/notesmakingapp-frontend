@@ -47,7 +47,7 @@ const NoteCard = ({ theme, note, onEdit, onDelete, loggedInUserEmail }) => {
       {/* Note Collaborators */}
       <span className="font-bold">Collaborators:</span>
       {}
-      <span style={{textDecoration:"underline"}} className="font-normal">
+      <span style={{textDecoration:"underline",wordBreak: "break-word" }} className="font-normal">
         {note.collaborators.length >= 1
           ? note.collaborators.join(", ") // List of collaborators
           : "No collaborators"} 
