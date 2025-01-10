@@ -61,6 +61,28 @@ Ensure you have the following installed:
 - Node.js (version 14 or above)
 - npm or yarn package manager
 
+###Testing and Error Handling
+
+Key Strategies
+
+Route Protection:
+
+Users cannot access any routes except Sign In and Sign Up if they do not have a valid token.
+
+Unauthorized users are automatically redirected to the Sign In page.
+
+Session Expiry Handling:
+
+When a session expires, an Axios interceptor detects the issue and logs the user out.
+
+The user is required to log in again to regain access.
+
+Restricted Access for Authenticated Users:
+
+Logged-in users cannot access Sign In or Sign Up routes unless they log out first.
+
+This ensures seamless navigation and prevents unnecessary route conflicts.
+
 ### Setup Instructions
 
 #### Generating GitHub Key for Netlify
