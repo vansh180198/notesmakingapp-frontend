@@ -2,6 +2,8 @@
 
 **Live App**: [Notes Collaboration App](https://eclectic-gaufre-6ce38f.netlify.app/)
 
+Backend Github repo:https://github.com/vansh180198/notesmakingapp-backend
+
 ## Overview
 The **Notes Collaboration App** is a real-time collaborative note-taking application. This repository contains the frontend code, built using **React** and **Vite**, and designed to provide a seamless and intuitive user experience for creating, editing, and collaborating on notes in real time.
 
