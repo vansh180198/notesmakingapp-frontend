@@ -41,6 +41,16 @@ const Navbar = ({ toggleTheme, currentTheme }) => {
       setMessage("Both fields are required!");
       return;
     }
+  
+    // Regular expression for email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+    // Check if both fields are valid emails
+    if (!emailRegex.test(inviteEmail) || !emailRegex.test(inviteUsername)) {
+      setMessage("Both fields must contain valid email addresses!");
+      return;
+    }
+  
 
     setLoading(true);
     setMessage("");
@@ -190,7 +200,7 @@ const Navbar = ({ toggleTheme, currentTheme }) => {
             />
             {/* Input for invitee's username */}
             <Input
-              type="text"
+              type="email"
               placeholder="Username for Registration"
               value={inviteUsername}
               onChange={(e) => setInviteUsername(e.target.value)}

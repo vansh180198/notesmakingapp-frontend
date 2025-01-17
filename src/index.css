@@ -75,3 +75,8 @@
     @apply border border-border bg-input text-foreground focus:ring-primary focus:outline-none;
   }
 }
+
+
+.asterik{
+  color:red
+}

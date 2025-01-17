@@ -35,7 +35,7 @@ const NotesList = ({ theme }) => {
   const [isOnlineUsersTabOpen, setIsOnlineUsersTabOpen] = useState(false);
 
   // States for managing new note creation or editing
-  const [newTitle, setNewTitle] = useState("");
+  const [newTitle, setNewTitle] = useState("Untitled");
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newCollaborators, setNewCollaborators] = useState("");
@@ -323,7 +323,7 @@ const NotesList = ({ theme }) => {
 
     let noteData = {
       id: Date.now() * 1000 + Math.floor(Math.random() * 1000),
-      title: newTitle,
+      title: newTitle==""?"Untitled":newTitle,
       content: newContent,
       category: newCategory || null,
       collaborators: newCollaborators.split(",").map((email) => email.trim()),
@@ -371,7 +371,7 @@ const NotesList = ({ theme }) => {
 
   const resetForm = () => {
     setShowModal(false);
-    setNewTitle("");
+    setNewTitle("Untitled");
     setNewContent("");
     setNewCategory("");
     setNewCollaborators("");
